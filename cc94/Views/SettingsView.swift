@@ -13,18 +13,19 @@ struct SettingsView: View {
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(hex: "02102b")
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 30) {
-                        // Gameplay Settings
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Gameplay")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
+        GeometryReader { geometry in
+            NavigationView {
+                ZStack {
+                    Color(hex: "02102b")
+                        .ignoresSafeArea()
+                    
+                    ScrollView {
+                        VStack(spacing: 30) {
+                            // Gameplay Settings
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text("Gameplay")
+                                    .font(.system(size: min(geometry.size.width * 0.06, 24), weight: .bold))
+                                    .foregroundColor(.white)
                             
                             SettingToggle(
                                 icon: "hand.tap.fill",
@@ -60,11 +61,11 @@ struct SettingsView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Statistics
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Statistics")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
+                            // Statistics
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text("Statistics")
+                                    .font(.system(size: min(geometry.size.width * 0.06, 24), weight: .bold))
+                                    .foregroundColor(.white)
                             
                             VStack(spacing: 15) {
                                 StatRow(
@@ -105,11 +106,11 @@ struct SettingsView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Reset Game
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Game Data")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
+                            // Reset Game
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text("Game Data")
+                                    .font(.system(size: min(geometry.size.width * 0.06, 24), weight: .bold))
+                                    .foregroundColor(.white)
                             
                             Button(action: {
                                 viewModel.showingResetConfirmation = true
@@ -126,35 +127,36 @@ struct SettingsView: View {
                                 .background(Color(hex: "bd0e1b"))
                                 .cornerRadius(12)
                             }
+                            }
+                            .padding(.horizontal)
+                            .padding(.bottom, 30)
                         }
-                        .padding(.horizontal)
-                        .padding(.bottom, 30)
+                        .padding(.top, 20)
                     }
-                    .padding(.top, 20)
+                }
+                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(
+                    trailing: Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(Color(hex: "ffbe00"))
+                            .font(.system(size: 22))
+                    }
+                )
+                .alert("Reset Game?", isPresented: $viewModel.showingResetConfirmation) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Reset", role: .destructive) {
+                        viewModel.resetGame()
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                } message: {
+                    Text("This will reset all your progress, points, and achievements. This action cannot be undone.")
                 }
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                trailing: Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(Color(hex: "ffbe00"))
-                        .font(.system(size: 22))
-                }
-            )
-            .alert("Reset Game?", isPresented: $viewModel.showingResetConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Reset", role: .destructive) {
-                    viewModel.resetGame()
-                    presentationMode.wrappedValue.dismiss()
-                }
-            } message: {
-                Text("This will reset all your progress, points, and achievements. This action cannot be undone.")
-            }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func formatDate(_ date: Date) -> String? {

@@ -39,77 +39,82 @@ struct OnboardingView: View {
     ]
     
     var body: some View {
-        ZStack {
-            Color(hex: "02102b")
-                .ignoresSafeArea()
-            
-            VStack(spacing: 30) {
-                // Skip button
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        showOnboarding = false
-                    }) {
-                        Text("Skip")
-                            .foregroundColor(Color(hex: "ffbe00"))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                    }
-                }
-                .padding(.horizontal)
+        GeometryReader { geometry in
+            ZStack {
+                Color(hex: "02102b")
+                    .ignoresSafeArea()
                 
-                Spacer()
-                
-                // Page content
-                TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        OnboardingPageView(page: pages[index])
-                            .tag(index)
-                    }
-                }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
-                .frame(height: 500)
-                
-                Spacer()
-                
-                // Navigation buttons
-                HStack(spacing: 20) {
-                    if currentPage > 0 {
+                VStack(spacing: geometry.size.height * 0.03) {
+                    // Skip button
+                    HStack {
+                        Spacer()
                         Button(action: {
-                            withAnimation {
-                                currentPage -= 1
+                            showOnboarding = false
+                        }) {
+                            Text("Skip")
+                                .font(.system(size: min(geometry.size.width * 0.04, 16)))
+                                .foregroundColor(Color(hex: "ffbe00"))
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer()
+                    
+                    // Page content
+                    TabView(selection: $currentPage) {
+                        ForEach(0..<pages.count, id: \.self) { index in
+                            OnboardingPageView(page: pages[index], geometry: geometry)
+                                .tag(index)
+                        }
+                    }
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+                    .frame(height: min(geometry.size.height * 0.6, 500))
+                    
+                    Spacer()
+                
+                    // Navigation buttons
+                    HStack(spacing: 20) {
+                        if currentPage > 0 {
+                            Button(action: {
+                                withAnimation {
+                                    currentPage -= 1
+                                }
+                            }) {
+                                Text("Back")
+                                    .font(.system(size: min(geometry.size.width * 0.045, 18)))
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color(hex: "0a1a3b"))
+                                    .cornerRadius(12)
+                            }
+                        }
+                        
+                        Button(action: {
+                            if currentPage < pages.count - 1 {
+                                withAnimation {
+                                    currentPage += 1
+                                }
+                            } else {
+                                showOnboarding = false
                             }
                         }) {
-                            Text("Back")
+                            Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
+                                .font(.system(size: min(geometry.size.width * 0.045, 18)))
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color(hex: "0a1a3b"))
+                                .background(Color(hex: "bd0e1b"))
                                 .cornerRadius(12)
                         }
                     }
-                    
-                    Button(action: {
-                        if currentPage < pages.count - 1 {
-                            withAnimation {
-                                currentPage += 1
-                            }
-                        } else {
-                            showOnboarding = false
-                        }
-                    }) {
-                        Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(hex: "bd0e1b"))
-                            .cornerRadius(12)
-                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, max(geometry.safeAreaInsets.bottom, 30))
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 30)
             }
         }
     }
@@ -124,24 +129,29 @@ struct OnboardingPage {
 
 struct OnboardingPageView: View {
     let page: OnboardingPage
+    let geometry: GeometryProxy
     
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: min(geometry.size.height * 0.04, 30)) {
             Image(systemName: page.icon)
-                .font(.system(size: 80))
+                .font(.system(size: min(geometry.size.width * 0.2, 80)))
                 .foregroundColor(page.color)
             
             Text(page.title)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+                .minimumScaleFactor(0.5)
+                .lineLimit(3)
             
             Text(page.description)
-                .font(.system(size: 18))
+                .font(.system(size: min(geometry.size.width * 0.045, 18)))
                 .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+                .minimumScaleFactor(0.7)
+                .lineLimit(5)
         }
     }
 }

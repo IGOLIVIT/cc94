@@ -15,7 +15,6 @@ struct MainView: View {
     var motivationalPhrase: String {
         let puzzleCount = dataService.playerProgress.completedPuzzles.count
         let totalPuzzles = Puzzle.allPuzzles.count
-        let points = dataService.playerProgress.totalPoints
         
         if puzzleCount == 0 {
             return "Ready to Challenge Your Mind? 🧠"
@@ -37,88 +36,140 @@ struct MainView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(hex: "02102b")
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 30) {
-                        // Header Stats
-                        VStack(spacing: 15) {
-                            Text(motivationalPhrase)
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                            
-                            HStack(spacing: 30) {
-                                StatCard(
-                                    icon: "star.fill",
-                                    value: "\(dataService.playerProgress.totalPoints)",
-                                    label: "Points"
-                                )
-                                
-                                StatCard(
-                                    icon: "flag.fill",
-                                    value: "\(dataService.playerProgress.currentLevel)",
-                                    label: "Level"
-                                )
-                                
-                                StatCard(
-                                    icon: "checkmark.circle.fill",
-                                    value: "\(dataService.playerProgress.completedPuzzles.count)",
-                                    label: "Solved"
-                                )
-                            }
-                        }
-                        .padding(.top, 20)
-                        
-                        // Levels Section
-                        VStack(alignment: .leading, spacing: 20) {
-                            Text("Levels")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal)
-                            
-                            ForEach(1...8, id: \.self) { level in
-                                LevelCard(
-                                    level: level,
-                                    isUnlocked: dataService.isLevelUnlocked(level),
-                                    puzzles: dataService.getPuzzlesForLevel(level),
-                                    completedPuzzles: dataService.playerProgress.completedPuzzles
-                                )
-                                .onTapGesture {
-                                    if dataService.isLevelUnlocked(level) {
-                                        selectedLevel = level
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.top, 20)
-                        
-                        // Achievements Section
-                        if !dataService.playerProgress.achievements.isEmpty {
-                            VStack(alignment: .leading, spacing: 20) {
-                                Text("Achievements")
-                                    .font(.system(size: 24, weight: .bold))
+        GeometryReader { geometry in
+            NavigationView {
+                ZStack {
+                    Color(hex: "02102b")
+                        .ignoresSafeArea()
+                    
+                    ScrollView {
+                        VStack(spacing: 30) {
+                            // Header Stats
+                            VStack(spacing: 15) {
+                                Text(motivationalPhrase)
+                                    .font(.system(size: min(geometry.size.width * 0.06, 24), weight: .bold))
                                     .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
                                     .padding(.horizontal)
+                                    .minimumScaleFactor(0.5)
+                                    .lineLimit(2)
                                 
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 15) {
-                                        ForEach(dataService.playerProgress.achievements) { achievement in
-                                            AchievementCard(achievement: achievement)
-                                        }
+                                // Adaptive layout for stats
+                                if geometry.size.width < 400 {
+                                    // Vertical layout for small screens
+                                    VStack(spacing: 15) {
+                                        StatCard(
+                                            icon: "star.fill",
+                                            value: "\(dataService.playerProgress.totalPoints)",
+                                            label: "Points"
+                                        )
+                                        
+                                        StatCard(
+                                            icon: "flag.fill",
+                                            value: "\(dataService.playerProgress.currentLevel)",
+                                            label: "Level"
+                                        )
+                                        
+                                        StatCard(
+                                            icon: "checkmark.circle.fill",
+                                            value: "\(dataService.playerProgress.completedPuzzles.count)",
+                                            label: "Solved"
+                                        )
+                                    }
+                                    .padding(.horizontal)
+                                } else {
+                                    // Horizontal layout for larger screens
+                                    HStack(spacing: min(geometry.size.width * 0.05, 30)) {
+                                        StatCard(
+                                            icon: "star.fill",
+                                            value: "\(dataService.playerProgress.totalPoints)",
+                                            label: "Points"
+                                        )
+                                        
+                                        StatCard(
+                                            icon: "flag.fill",
+                                            value: "\(dataService.playerProgress.currentLevel)",
+                                            label: "Level"
+                                        )
+                                        
+                                        StatCard(
+                                            icon: "checkmark.circle.fill",
+                                            value: "\(dataService.playerProgress.completedPuzzles.count)",
+                                            label: "Solved"
+                                        )
                                     }
                                     .padding(.horizontal)
                                 }
                             }
                             .padding(.top, 20)
+                        
+                            // Levels Section
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text("Levels")
+                                    .font(.system(size: min(geometry.size.width * 0.06, 24), weight: .bold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal)
+                                
+                                // Adaptive grid for levels
+                                if geometry.size.width > 700 {
+                                    // Two column layout for landscape/iPad
+                                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                                        ForEach(1...8, id: \.self) { level in
+                                            LevelCard(
+                                                level: level,
+                                                isUnlocked: dataService.isLevelUnlocked(level),
+                                                puzzles: dataService.getPuzzlesForLevel(level),
+                                                completedPuzzles: dataService.playerProgress.completedPuzzles
+                                            )
+                                            .onTapGesture {
+                                                if dataService.isLevelUnlocked(level) {
+                                                    selectedLevel = level
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal)
+                                } else {
+                                    // Single column for portrait/small screens
+                                    ForEach(1...8, id: \.self) { level in
+                                        LevelCard(
+                                            level: level,
+                                            isUnlocked: dataService.isLevelUnlocked(level),
+                                            puzzles: dataService.getPuzzlesForLevel(level),
+                                            completedPuzzles: dataService.playerProgress.completedPuzzles
+                                        )
+                                        .onTapGesture {
+                                            if dataService.isLevelUnlocked(level) {
+                                                selectedLevel = level
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(.top, 20)
+                        
+                            // Achievements Section
+                            if !dataService.playerProgress.achievements.isEmpty {
+                                VStack(alignment: .leading, spacing: 20) {
+                                    Text("Achievements")
+                                        .font(.system(size: min(geometry.size.width * 0.06, 24), weight: .bold))
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 15) {
+                                            ForEach(dataService.playerProgress.achievements) { achievement in
+                                                AchievementCard(achievement: achievement)
+                                            }
+                                        }
+                                        .padding(.horizontal)
+                                    }
+                                }
+                                .padding(.top, 20)
+                            }
                         }
+                        .padding(.bottom, 30)
                     }
-                    .padding(.bottom, 30)
-                }
                 
                 // Settings button
                 VStack {
@@ -138,16 +189,17 @@ struct MainView: View {
                     }
                     Spacer()
                 }
+                }
+                .navigationBarHidden(true)
+                .sheet(isPresented: $showSettings) {
+                    SettingsView()
+                }
+                .sheet(item: $selectedLevel) { level in
+                    LevelDetailView(level: level)
+                }
             }
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-            }
-            .sheet(item: $selectedLevel) { level in
-                LevelDetailView(level: level)
-            }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 

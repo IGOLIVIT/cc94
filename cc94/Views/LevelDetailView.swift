@@ -18,50 +18,64 @@ struct LevelDetailView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(hex: "02102b")
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // Level header
-                        VStack(spacing: 10) {
-                            Text("Level \(level)")
-                                .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.white)
+        GeometryReader { geometry in
+            NavigationView {
+                ZStack {
+                    Color(hex: "02102b")
+                        .ignoresSafeArea()
+                    
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            // Level header
+                            VStack(spacing: 10) {
+                                Text("Level \(level)")
+                                    .font(.system(size: min(geometry.size.width * 0.08, 32), weight: .bold))
+                                    .foregroundColor(.white)
+                                
+                                Text("Choose a puzzle to solve")
+                                    .font(.system(size: min(geometry.size.width * 0.04, 16)))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            .padding(.top, 20)
                             
-                            Text("Choose a puzzle to solve")
-                                .font(.system(size: 16))
-                                .foregroundColor(.white.opacity(0.7))
-                        }
-                        .padding(.top, 20)
-                        
-                        // Puzzles
-                        ForEach(puzzles) { puzzle in
-                            PuzzleCard(puzzle: puzzle)
-                                .onTapGesture {
-                                    selectedPuzzle = puzzle
+                            // Puzzles - adaptive grid
+                            if geometry.size.width > 700 {
+                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                                    ForEach(puzzles) { puzzle in
+                                        PuzzleCard(puzzle: puzzle)
+                                            .onTapGesture {
+                                                selectedPuzzle = puzzle
+                                            }
+                                    }
                                 }
+                                .padding()
+                            } else {
+                                ForEach(puzzles) { puzzle in
+                                    PuzzleCard(puzzle: puzzle)
+                                        .onTapGesture {
+                                            selectedPuzzle = puzzle
+                                        }
+                                }
+                                .padding()
+                            }
                         }
                     }
-                    .padding()
+                    }
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(
+                    leading: Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(Color(hex: "ffbe00"))
+                    }
+                )
+                .sheet(item: $selectedPuzzle) { puzzle in
+                    GameView(puzzle: puzzle)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                leading: Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark")
-                        .foregroundColor(Color(hex: "ffbe00"))
-                }
-            )
-            .sheet(item: $selectedPuzzle) { puzzle in
-                GameView(puzzle: puzzle)
-            }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
@@ -137,4 +151,5 @@ struct PuzzleCard: View {
         )
     }
 }
+
 

@@ -15,57 +15,60 @@ struct GameView: View {
     @State private var showingHintAlert = false
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(hex: "02102b")
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 25) {
-                        // Puzzle Header
-                        VStack(spacing: 15) {
-                            // Pattern visualization
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color(hex: "0a1a3b"))
-                                    .frame(height: 200)
-                                
-                                VStack(spacing: 10) {
-                                    Image(systemName: "puzzlepiece.extension.fill")
-                                        .font(.system(size: 60))
-                                        .foregroundColor(Color(hex: "ffbe00"))
+        GeometryReader { geometry in
+            NavigationView {
+                ZStack {
+                    Color(hex: "02102b")
+                        .ignoresSafeArea()
+                    
+                    ScrollView {
+                        VStack(spacing: 25) {
+                            // Puzzle Header
+                            VStack(spacing: 15) {
+                                // Pattern visualization
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .fill(Color(hex: "0a1a3b"))
+                                        .frame(height: min(geometry.size.height * 0.25, 200))
                                     
-                                    Text(puzzle.imagePattern.replacingOccurrences(of: "pattern_", with: "").capitalized)
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.7))
+                                    VStack(spacing: 10) {
+                                        Image(systemName: "puzzlepiece.extension.fill")
+                                            .font(.system(size: min(geometry.size.width * 0.15, 60)))
+                                            .foregroundColor(Color(hex: "ffbe00"))
+                                        
+                                        Text(puzzle.imagePattern.replacingOccurrences(of: "pattern_", with: "").capitalized)
+                                            .font(.system(size: min(geometry.size.width * 0.04, 16), weight: .medium))
+                                            .foregroundColor(.white.opacity(0.7))
+                                    }
+                                }
+                                .padding(.horizontal)
+                                
+                                Text(puzzle.title)
+                                    .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
+                                    .foregroundColor(.white)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                    .minimumScaleFactor(0.5)
+                                    .lineLimit(3)
+                                
+                                HStack {
+                                    Image(systemName: "star.fill")
+                                        .foregroundColor(Color(hex: "ffbe00"))
+                                    Text("\(puzzle.points) points")
+                                        .foregroundColor(.white)
                                 }
                             }
-                            .padding(.horizontal)
-                            
-                            Text(puzzle.title)
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                            
-                            HStack {
-                                Image(systemName: "star.fill")
-                                    .foregroundColor(Color(hex: "ffbe00"))
-                                Text("\(puzzle.points) points")
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .padding(.top, 20)
+                            .padding(.top, 20)
                         
-                        // How to Play Instructions
-                        VStack(alignment: .leading, spacing: 15) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "info.circle.fill")
-                                    .foregroundColor(Color(hex: "ffbe00"))
-                                Text("How to Play")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(Color(hex: "ffbe00"))
-                            }
+                            // How to Play Instructions
+                            VStack(alignment: .leading, spacing: 15) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundColor(Color(hex: "ffbe00"))
+                                    Text("How to Play")
+                                        .font(.system(size: min(geometry.size.width * 0.05, 20), weight: .bold))
+                                        .foregroundColor(Color(hex: "ffbe00"))
+                                }
                             
                             VStack(alignment: .leading, spacing: 10) {
                                 InstructionRow(number: "1", text: "Read the puzzle challenge carefully")
@@ -91,32 +94,33 @@ struct GameView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Puzzle Description
-                        VStack(alignment: .leading, spacing: 15) {
-                            Text("Challenge")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(Color(hex: "ffbe00"))
-                            
-                            Text(puzzle.description)
-                                .font(.system(size: 18))
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color(hex: "0a1a3b"))
-                                .cornerRadius(12)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Hints Section
-                        if !viewModel.currentHints.isEmpty {
+                            // Puzzle Description
                             VStack(alignment: .leading, spacing: 15) {
-                                HStack {
-                                    Image(systemName: "lightbulb.fill")
-                                        .foregroundColor(Color(hex: "ffbe00"))
-                                    Text("Hints")
-                                        .font(.system(size: 20, weight: .bold))
-                                        .foregroundColor(Color(hex: "ffbe00"))
-                                }
+                                Text("Challenge")
+                                    .font(.system(size: min(geometry.size.width * 0.05, 20), weight: .bold))
+                                    .foregroundColor(Color(hex: "ffbe00"))
+                                
+                                Text(puzzle.description)
+                                    .font(.system(size: min(geometry.size.width * 0.045, 18)))
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color(hex: "0a1a3b"))
+                                    .cornerRadius(12)
+                                    .minimumScaleFactor(0.8)
+                            }
+                            .padding(.horizontal)
+                        
+                            // Hints Section
+                            if !viewModel.currentHints.isEmpty {
+                                VStack(alignment: .leading, spacing: 15) {
+                                    HStack {
+                                        Image(systemName: "lightbulb.fill")
+                                            .foregroundColor(Color(hex: "ffbe00"))
+                                        Text("Hints")
+                                            .font(.system(size: min(geometry.size.width * 0.05, 20), weight: .bold))
+                                            .foregroundColor(Color(hex: "ffbe00"))
+                                    }
                                 
                                 ForEach(Array(viewModel.currentHints.enumerated()), id: \.offset) { index, hint in
                                     HStack(alignment: .top, spacing: 10) {
@@ -137,26 +141,26 @@ struct GameView: View {
                             .padding(.horizontal)
                         }
                         
-                        // Answer Input
-                        VStack(alignment: .leading, spacing: 15) {
-                            Text("Your Answer")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.white)
-                            
-                            TextField("Enter your answer", text: $viewModel.userAnswer)
-                                .font(.system(size: 18))
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color(hex: "0a1a3b"))
-                                .cornerRadius(12)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color(hex: "ffbe00"), lineWidth: 2)
-                                )
-                                .autocapitalization(.none)
-                                .disableAutocorrection(true)
-                        }
-                        .padding(.horizontal)
+                            // Answer Input
+                            VStack(alignment: .leading, spacing: 15) {
+                                Text("Your Answer")
+                                    .font(.system(size: min(geometry.size.width * 0.05, 20), weight: .bold))
+                                    .foregroundColor(.white)
+                                
+                                TextField("Enter your answer", text: $viewModel.userAnswer)
+                                    .font(.system(size: min(geometry.size.width * 0.045, 18)))
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .background(Color(hex: "0a1a3b"))
+                                    .cornerRadius(12)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color(hex: "ffbe00"), lineWidth: 2)
+                                    )
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+                            }
+                            .padding(.horizontal)
                         
                         // Action Buttons
                         VStack(spacing: 15) {
@@ -207,8 +211,8 @@ struct GameView: View {
             )
             .onAppear {
                 viewModel.loadPuzzle(puzzle)
-            }
-            .alert(isPresented: $viewModel.showingResult) {
+                }
+                .alert(isPresented: $viewModel.showingResult) {
                 Alert(
                     title: Text(viewModel.isCorrect ? "Correct!" : "Try Again"),
                     message: Text(viewModel.resultMessage),
@@ -225,11 +229,12 @@ struct GameView: View {
                 Button("Use 20 Points") {
                     viewModel.unlockHint()
                 }
-            } message: {
-                Text("This will cost 20 points. You have \(dataService.playerProgress.totalPoints) points.")
+                } message: {
+                    Text("This will cost 20 points. You have \(dataService.playerProgress.totalPoints) points.")
+                }
             }
+            .navigationViewStyle(StackNavigationViewStyle())
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
 
